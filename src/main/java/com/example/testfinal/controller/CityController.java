@@ -6,12 +6,14 @@ import com.example.testfinal.service.city.CityService;
 import com.example.testfinal.service.nation.NationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +45,11 @@ public class CityController {
         return modelAndView;
     }
     @PostMapping("/create-city")
-    public ModelAndView saveCity(@ModelAttribute City city){
+    public ModelAndView saveCity(@Valid @ModelAttribute City city, BindingResult bindingResult){
+        if (bindingResult.hasErrors()){
+            ModelAndView modelAndView= new ModelAndView("city/create");
+            return modelAndView;
+        }
         service.save(city);
         ModelAndView modelAndView=new ModelAndView("city/create");
         modelAndView.addObject("message", "Create City Successfully!!!");
@@ -65,7 +71,11 @@ public class CityController {
         return modelAndView;
     }
     @PostMapping("/edit-city")
-    public ModelAndView updateCity(@ModelAttribute City city){
+    public ModelAndView updateCity( @Valid @ModelAttribute City city, BindingResult bindingResult){
+        if (bindingResult.hasErrors()){
+            ModelAndView modelAndView= new ModelAndView("city/edit");
+            return modelAndView;
+        }
         if (city== null){
             ModelAndView modelAndView =new ModelAndView("city/edit");
             modelAndView.addObject("message", "Error Update !!!");
@@ -73,9 +83,19 @@ public class CityController {
         }
 
         service.save(city);
+        List<City> list= service.findAll();
         ModelAndView modelAndView =new ModelAndView("city/list");
         modelAndView.addObject("message", "Update City Successfully!!!");
-//        modelAndView.addObject("city", new City());
+        modelAndView.addObject("list",list);
+        return modelAndView;
+    }
+    @GetMapping("/delete-city/{id}")
+    public ModelAndView deleteCity(@PathVariable Long id ){
+        service.delete(id);
+        List<City> list= service.findAll();
+        ModelAndView modelAndView= new ModelAndView("city/list");
+        modelAndView.addObject("message", "Delete City Successfully!!!");
+        modelAndView.addObject("list", list);
         return modelAndView;
     }
 
